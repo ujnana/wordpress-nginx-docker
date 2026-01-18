@@ -7,7 +7,7 @@ services:
     restart: always
     env_file: .env
     volumes:
-      - db_data:/var/lib/mysql
+      - ./db_data:/var/lib/mysql
     networks:
       - backend
 
@@ -19,7 +19,7 @@ services:
     restart: always
     env_file: .env
     volumes:
-      - wordpress_data:/var/www/html
+      - ./wordpress_files:/var/www/html
     depends_on:
       - db
       - redis
@@ -34,7 +34,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - wordpress_data:/var/www/html
+      - ./wordpress_files:/var/www/html
       - ./nginx/templates:/etc/nginx/templates
       - ./nginx/logs:/var/log/nginx
       - ./certbot/conf:/etc/letsencrypt
@@ -78,7 +78,3 @@ services:
 networks:
   backend:
     driver: bridge
-
-volumes:
-  db_data:
-  wordpress_data:
