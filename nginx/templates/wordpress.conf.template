@@ -2,28 +2,19 @@ server {
     listen 80;
     server_name ${DOMAIN_NAME};
 
+    # Lokasi untuk verifikasi Let's Encrypt
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
     }
 
-    location / {
-        return 301 https://$host$request_uri;
-    }
-}
+    # REDIRECT KE HTTPS (Comment ini dulu jika belum punya sertifikat)
+    # location / {
+    #     return 301 https://$host$request_uri;
+    # }
 
-server {
-    listen 443 ssl;
-    server_name ${DOMAIN_NAME};
-
-    # SSL configuration - these paths will exist after Certbot runs
-    ssl_certificate /etc/letsencrypt/live/${DOMAIN_NAME}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN_NAME}/privkey.pem;
-
+    # SEMENTARA: Layani WordPress via HTTP (pindahkan/hapus blok ini setelah SSL aktif)
     root /var/www/html;
     index index.php;
-
-    access_log /var/log/nginx/access.log;
-    error_log /var/log/nginx/error.log;
 
     location / {
         try_files $uri $uri/ /index.php?$args;
@@ -38,18 +29,46 @@ server {
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         fastcgi_param PATH_INFO $fastcgi_path_info;
     }
-
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
-        expires max;
-        log_not_found off;
-    }
-
-    location ~ /\.ht {
-        deny all;
-    }
-
-    # Custom security headers
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-XSS-Protection "1; mode=block";
-    add_header X-Content-Type-Options "nosniff";
 }
+
+# CONFIG-SSL: Uncomment blok di bawah ini SETELAH menjalankan ./init-ssl.sh
+# server {
+#     listen 443 ssl;
+#     server_name ${DOMAIN_NAME};
+#
+#     ssl_certificate /etc/letsencrypt/live/${DOMAIN_NAME}/fullchain.pem;
+#     ssl_certificate_key /etc/letsencrypt/live/${DOMAIN_NAME}/privkey.pem;
+#
+#     root /var/www/html;
+#     index index.php;
+#
+#     access_log /var/log/nginx/access.log;
+#     error_log /var/log/nginx/error.log;
+#
+#     location / {
+#         try_files $uri $uri/ /index.php?$args;
+#     }
+#
+#     location ~ \.php$ {
+#         try_files $uri =404;
+#         fastcgi_split_path_info ^(.+\.php)(/.+)$;
+#         fastcgi_pass wordpress:9000;
+#         fastcgi_index index.php;
+#         include fastcgi_params;
+#         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+#         fastcgi_param PATH_INFO $fastcgi_path_info;
+#     }
+#
+#     location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+#         expires max;
+#         log_not_found off;
+#     }
+#
+#     location ~ /\.ht {
+#         deny all;
+#     }
+#
+#     add_header X-Frame-Options "SAMEORIGIN";
+#     add_header X-XSS-Protection "1; mode=block";
+#     add_header X-Content-Type-Options "nosniff";
+# }
