@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:10.11
+    container_name: wordpress_db
+    restart: always
+    env_file: .env
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - backend
+
+  wordpress:
+    build:
+      context: .
+      dockerfile: wordpress/Dockerfile
+    container_name: wordpress_app
+    restart: always
+    env_file: .env
+    volumes:
+      - wordpress_data:/var/www/html
+    depends_on:
+      - db
+      - redis
+    networks:
+      - backend
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: wordpress_nginx
+    restart: always
+    ports:
+      - "8081:80"
+    volumes:
+      - wordpress_data:/var/www/html
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - wordpress
+    networks:
+      - backend
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: wordpress_phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    env_file: .env
+    depends_on:
+      - db
+    networks:
+      - backend
+
+  redis:
+    image: redis:alpine
+    container_name: wordpress_redis
+    restart: always
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  db_data:
+  wordpress_data:
