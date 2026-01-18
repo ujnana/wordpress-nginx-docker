@@ -5,7 +5,8 @@ services:
     image: mariadb:10.11
     container_name: wordpress_db
     restart: always
-    env_file: .env
+    env_file:
+      - .env
     volumes:
       - ./db_data:/var/lib/mysql
     networks:
@@ -16,8 +17,12 @@ services:
       context: .
       dockerfile: wordpress/Dockerfile
     container_name: wordpress_app
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     restart: always
-    env_file: .env
+    env_file:
+      - .env
     volumes:
       - ./wordpress_files:/var/www/html
     depends_on:
@@ -62,7 +67,8 @@ services:
     restart: always
     ports:
       - "8080:80"
-    env_file: .env
+    env_file:
+      - .env
     depends_on:
       - db
     networks:
