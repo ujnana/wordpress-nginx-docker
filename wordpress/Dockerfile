@@ -3,6 +3,8 @@ FROM wordpress:6.4-fpm-alpine
 # Install system dependencies
 RUN apk add --no-cache \
     bash \
+    curl \
+    ca-certificates \
     imagemagick \
     imagemagick-dev \
     libzip-dev \
@@ -13,6 +15,11 @@ RUN apk add --no-cache \
     build-base \
     autoconf \
     libtool
+
+# Install WP-CLI
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+    && chmod +x wp-cli.phar \
+    && mv wp-cli.phar /usr/local/bin/wp
 
 # Install PHP extensions
 # Note: opcache and imagick may already be in the base image, 
