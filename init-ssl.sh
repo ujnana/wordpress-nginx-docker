@@ -1,13 +1,15 @@
 #!/bin/bash
 
-# Load environment variables
+# Load environment variables (handling special characters)
 if [ -f .env ]; then
-    export $(cat .env | xargs)
+    set -a
+    source .env
+    set +a
 fi
 
 echo "Requesting Let's Encrypt certificate for $DOMAIN_NAME..."
 
-docker-compose run --rm certbot certonly --webroot --webroot-path=/var/www/certbot \
+docker compose run --rm certbot certonly --webroot --webroot-path=/var/www/certbot \
     --email $EMAIL --agree-tos --no-eff-email \
     -d $DOMAIN_NAME
 
