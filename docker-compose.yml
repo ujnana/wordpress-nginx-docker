@@ -25,13 +25,21 @@ services:
     depends_on:
       - db
       - redis
-    network_mode: host
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    networks:
+      - backend
 
   nginx:
     image: nginx:stable-alpine
     container_name: wordpress_nginx
     restart: always
-    network_mode: host
+    networks:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
     volumes:
       - ./wordpress_files:/var/www/html
       - ./nginx/templates:/etc/nginx/templates
@@ -40,6 +48,9 @@ services:
       - ./certbot/www:/var/www/certbot
     environment:
       - DOMAIN_NAME=${DOMAIN_NAME}
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     depends_on:
       - wordpress
 
@@ -50,7 +61,8 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-    network_mode: host
+    networks:
+      - backend
 
   phpmyadmin:
     image: phpmyadmin:latest
